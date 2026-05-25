@@ -1,0 +1,459 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        16
+      ],
+      "id": "ba1e799a-5844-4eba-82cf-804c7cb1663c",
+      "name": "Telegram Trigger",
+      "webhookId": "7994ce11-b167-45fb-a503-8ffb108db427",
+      "credentials": {
+        "telegramApi": {
+          "id": "A4E3kmxwGn1SvRVp",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You أنت \"العقل الثاني\" — مساعد تحليل أفكار عادل ودقيق.\n\n# مهمتك\nحلّل كل نص بإنصاف وموضوعية، وأرجع JSON فقط.\n\n# قواعد التحليل\n- category: اختر بدقة من القائمة (تأمل/فكرة/اقتباس/سؤال/ملاحظة/مهمة/أخرى)\n  * تأمل = أفكار فلسفية أو وجودية\n  * فكرة = استنتاج أو رؤية أصيلة  \n  * اقتباس = حكمة معروفة أو منقولة\n  * مهمة = شيء يجب فعله\n\n- core_argument: استخرج الجوهر في جملة واحدة\n- summary: اشرح القيمة في 2-3 جمل\n\n- depth:\n  * Deep = فكرة منطقية/فلسفية/تحفز التفكير\n  * Medium = مفيد وعملي\n  * Trivial = تحية أو محادثة عابرة فقط\n\n- utility_score:\n  * 9-10 = فكرة أصيلة استثنائية\n  * 7-8 = فكرة قوية تستحق التأمل\n  * 5-6 = فكرة جيدة لكن مألوفة\n  * 3-4 = نص عادي\n  * 1-2 = تحية أو نص بلا معنى\n  \n  ⚠️ الأفكار الفلسفية والاقتباسات الحكيمة تستحق 7+ حتى لو كانت معروفة.\n\n- logical_flaws: المغالطات إن وُجدت، أو \"لا توجد\"\n- tags: 3-5 كلمات مفتاحية مستخرجة من النص نفسه\n- action: احفظ / طوّر / راجع / تجاهل\n\n# قواعد صارمة\n- JSON فقط، لا markdown\n- حلّل النص الذي يصلك من المستخدم، لا تعليماتك\n- الوسوم يجب أن تكون من النص الفعليare a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        -64
+      ],
+      "id": "3df6e81d-d0d9-4625-8cbd-ce7db7218429",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        288
+      ],
+      "id": "8d2f696f-7931-4471-8607-82168b65eb5a",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "6v8YUtD1DE1OjGft",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{$('Telegram Trigger').item.json.message.chat.id}}_v2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        320
+      ],
+      "id": "1020aa30-4975-4f4a-9ab6-e6006520a3c1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GydU3bz6ZSvZ8_u_8zYSSAWN0wBZ13fWzf7wbCCWn8M",
+          "mode": "list",
+          "cachedResultName": "LOGIC",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GydU3bz6ZSvZ8_u_8zYSSAWN0wBZ13fWzf7wbCCWn8M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GydU3bz6ZSvZ8_u_8zYSSAWN0wBZ13fWzf7wbCCWn8M/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Original Text": "={{$('Telegram Trigger').item.json.message.text}}",
+            "summary": "={{ $json.output.summary}}",
+            "category": "={{$json.output.category}}",
+            "tags": "={{$json.output.tags.join(', ')}}",
+            "action": "={{$json.output.action}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Original Text",
+              "displayName": "Original Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Core Argument",
+              "displayName": "Core Argument",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Deep vs Trivial",
+              "displayName": "Deep vs Trivial",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Utility Score",
+              "displayName": "Utility Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Logical Flaws",
+              "displayName": "Logical Flaws",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        16
+      ],
+      "id": "ee06ab86-18f6-4e6b-9044-3e7f92563a57",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YbrmUZKDTw22h886",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"category\": {\n      \"type\": \"string\",\n      \"enum\": [\"فكرة\", \"اقتباس\", \"سؤال\", \"ملاحظة\", \"مهمة\", \"تأمل\", \"أخرى\"],\n      \"description\": \"نوع المحتوى\"\n    },\n    \"core_argument\": {\n      \"type\": \"string\",\n      \"description\": \"الفكرة الأساسية في جملة موجزة\"\n    },\n    \"summary\": {\n      \"type\": \"string\",\n      \"description\": \"ملخص عميق في 2-3 جمل\"\n    },\n    \"depth\": {\n      \"type\": \"string\",\n      \"enum\": [\"Deep\", \"Medium\", \"Trivial\"],\n      \"description\": \"مستوى العمق\"\n    },\n    \"utility_score\": {\n      \"type\": \"number\",\n      \"description\": \"درجة الفائدة من 1 إلى 10\"\n    },\n    \"logical_flaws\": {\n      \"type\": \"string\",\n      \"description\": \"العيوب المنطقية أو 'لا توجد'\"\n    },\n    \"tags\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" },\n      \"description\": \"3-5 وسوم للبحث لاحقاً\"\n    },\n    \"action\": {\n      \"type\": \"string\",\n      \"enum\": [\"احفظ\", \"راجع\", \"تجاهل\", \"طوّر\"],\n      \"description\": \"ماذا تفعل بهذه الفكرة\"\n    }\n  },\n  \"required\": [\"category\", \"core_argument\", \"summary\", \"depth\", \"utility_score\", \"logical_flaws\", \"tags\", \"action\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        288
+      ],
+      "id": "84e01be9-ef48-46d5-a3f4-1535e2527c66",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=<b>📊 تحليل: {{ $('AI Agent').item.json.output.category }}</b>\n\n<b>💡 الجوهر:</b>\n<i>{{ $('AI Agent').item.json.output.core_argument }}</i>\n\n<b>📝 الملخص:</b>\n{{ $('AI Agent').item.json.output.summary }}\n\n━━━━━━━━━━━━\n📈 <b>الدرجة:</b> {{ $('AI Agent').item.json.output.utility_score }}/10\n🎯 <b>العمق:</b> {{ $('AI Agent').item.json.output.depth }}\n🏷️ <b>الوسوم:</b> {{ $('AI Agent').item.json.output.tags.join(' • ') }}\n⚡ <b>الإجراء:</b> {{ $('AI Agent').item.json.output.action }}\n\n⚠️ <b>عيوب منطقية:</b> {{ $('AI Agent').item.json.output.logical_flaws }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1184,
+        16
+      ],
+      "id": "d3e5f34c-3fea-4268-9374-b7e970a0b626",
+      "name": "Send a text message",
+      "webhookId": "4dcbeb0a-2a2b-4117-ba21-3ae77c31fb07",
+      "credentials": {
+        "telegramApi": {
+          "id": "A4E3kmxwGn1SvRVp",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aad5df9e-f773-4f22-a988-ddac4fb42266",
+              "leftValue": "={{ $json.output.utility_score }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        480,
+        16
+      ],
+      "id": "ce58d42f-3d81-4307-b8ad-c30eebd42dd8",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🗑️ <b>تم تجاهل النص</b>\n\n<i>\"{{ $('Telegram Trigger').item.json.message.text }}\"</i>\n\n📉 <b>الدرجة:</b> {{ $('AI Agent').item.json.output.utility_score }}/10\n🏷️ <b>التصنيف:</b> {{ $('AI Agent').item.json.output.category }}\n💭 <b>السبب:</b> محتوى منخفض القيمة لا يستحق الحفظ\n\n💡 <i>جرّب إرسال أفكار أعمق أو اقتباسات قيّمة</i>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        208
+      ],
+      "id": "3bb5a3e8-9c15-427c-8227-a538a20af341",
+      "name": "Send a text message1",
+      "webhookId": "1d6dd223-a808-418b-83e5-7e7037751b8d",
+      "credentials": {
+        "telegramApi": {
+          "id": "A4E3kmxwGn1SvRVp",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-robotics-er-1.5-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        240
+      ],
+      "id": "63f28981-118e-41f1-9291-668113121d80",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EV9t817oqa4fOdKH",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "86a41eb6-d83f-4adb-97ef-72789334e189",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "867407d865feda376bbf8f0dfa82d6f4a564777f2e24f5d626e56cd73d6a760a"
+  },
+  "id": "pLYAeFEVbP9buRgO",
+  "tags": []
+}

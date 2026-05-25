@@ -1,0 +1,190 @@
+{
+  "name": "OCR WORKFLOW",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "502cf1f4-4840-467e-89e6-447a6f51414f",
+      "name": "Telegram Trigger",
+      "webhookId": "e30039c7-fabe-499c-891a-7c7becd0cf06",
+      "credentials": {
+        "telegramApi": {
+          "id": "A4E3kmxwGn1SvRVp",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ocr.space/parse/image",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "helloworld"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "language",
+              "value": "ara"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "4eae8a8f-372e-43c8-b4ae-a3a383c9d2a0",
+      "name": "HTTP Request",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        0
+      ],
+      "id": "f291d4a9-efe2-42f3-8b8c-8c936ca449e6",
+      "name": "Send a text message",
+      "webhookId": "f82c7597-c469-4869-8198-802d41815c2c",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "A4E3kmxwGn1SvRVp",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Clean and fix OCR errors, format the text properly, and extract actionable items as a bullet list. Respond in the same language as the text: {{ $json.ParsedResults[0].ParsedText }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        176,
+        0
+      ],
+      "id": "828b1349-4a0f-413f-b6f2-c9fe819072a6",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        176,
+        176
+      ],
+      "id": "775d7cc4-13eb-4d03-acc2-66b03a05636f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "6v8YUtD1DE1OjGft",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bd700f8d-dd00-4dfb-8b0b-fa0f8c69c34a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "867407d865feda376bbf8f0dfa82d6f4a564777f2e24f5d626e56cd73d6a760a"
+  },
+  "id": "ACOtWIK30WyKCwjy",
+  "tags": []
+}

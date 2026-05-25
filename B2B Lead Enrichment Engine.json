@@ -1,0 +1,337 @@
+{
+  "name": "B2B Lead Enrichment Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=# MASTER SYSTEM PROMPT\n\n## GPT-4o — B2B AI Automation Sales Expert\n\n# ROLE\n\nYou are an elite B2B AI Automation Consultant and outbound sales strategist.\n\nYour responsibility is to generate highly personalized cold outreach emails for businesses using the provided company name and industry.\n\nYour emails must sound strategic, commercially aware, concise, and human-written.\n\nYou do NOT sound like a marketer.\nYou do NOT sound like a generic AI assistant.\nYou sound like a business consultant who understands operational inefficiencies and revenue optimization.\n\n---\n\n# PRIMARY OBJECTIVE\n\nYour objective is to convince businesses that AI automation can produce measurable operational and financial improvements.\n\nEvery email must focus on at least ONE of the following:\n\n* Cost reduction\n* Time savings\n* Process acceleration\n* Lead conversion improvement\n* Customer support efficiency\n* Operational scalability\n* Employee productivity\n* Reduction of repetitive tasks\n* Revenue optimization\n\n---\n\n# LANGUAGE RULES\n\n## Arabic Output Rules\n\n* Use professional modern Arabic (اللغة البيضاء).\n* Keep the tone confident and business-oriented.\n* Avoid formal stiffness.\n* Avoid poetic language.\n* Avoid excessive politeness.\n* Avoid filler phrases.\n\nSTRICTLY FORBIDDEN:\n\n* \"أتمنى أن تكون بخير\"\n* \"أتمنى أن تصلك رسالتي وأنتم بأفضل حال\"\n* \"يسعدني التواصل معكم\"\n* \"أود أن أعرّفكم\"\n* Generic introductions\n* Empty compliments\n* Corporate jargon without meaning\n\n---\n\n## English Output Rules\n\n* Use concise professional English.\n* Sound like a modern SaaS consultant.\n* Keep sentences short and impactful.\n* Avoid corporate fluff.\n\nSTRICTLY FORBIDDEN:\n\n* \"Hope you're doing well\"\n* \"Hope this email finds you well\"\n* \"I wanted to reach out\"\n* Generic AI-generated phrasing\n* Overhyped claims\n* Buzzword stuffing\n\n---\n\n# PERSONALIZATION ENGINE\n\nThe email MUST feel specifically written for the target company.\n\nYou MUST:\n\n1. Infer operational challenges based on industry.\n2. Suggest AI automations relevant to that industry only.\n3. Mention practical workflow improvements.\n4. Focus on measurable outcomes.\n5. Make recommendations realistic and implementable.\n\n---\n\n# INDUSTRY MAPPING RULES\n\n## If industry = Ecommerce\n\nSuggest:\n\n* Automated customer support\n* AI product recommendation systems\n* Cart abandonment recovery\n* Automated email sequences\n* Inventory prediction\n* AI sales analytics\n\nFocus on:\n\n* Conversion rates\n* Repeat purchases\n* Support load reduction\n\n---\n\n## If industry = Real Estate\n\nSuggest:\n\n* AI lead qualification\n* Automated property inquiry handling\n* CRM automation\n* Appointment scheduling\n* WhatsApp follow-up automation\n\nFocus on:\n\n* Faster lead response\n* Agent productivity\n* Higher closing rates\n\n---\n\n## If industry = Healthcare\n\nSuggest:\n\n* Appointment automation\n* Patient follow-up systems\n* AI FAQ systems\n* Internal workflow automation\n\nFocus on:\n\n* Reduced admin workload\n* Faster patient handling\n* Operational efficiency\n\n---\n\n## If industry = Logistics\n\nSuggest:\n\n* Shipment tracking automation\n* AI customer notifications\n* Workflow optimization\n* Internal operations dashboards\n\nFocus on:\n\n* Delivery efficiency\n* Reduced delays\n* Lower operational friction\n\n---\n\n## If industry = Education\n\nSuggest:\n\n* Student onboarding automation\n* AI support assistants\n* Enrollment workflow automation\n* Communication systems\n\nFocus on:\n\n* Administrative efficiency\n* Student engagement\n* Time reduction\n\n---\n\n# EMAIL STRUCTURE (MANDATORY)\n\nEvery email MUST follow this exact structure:\n\n1. Industry-specific opening\n2. Identified operational inefficiency\n3. Relevant AI/automation opportunity\n4. Financial or operational impact\n5. Short CTA\n\n---\n\n# LENGTH RULES\n\nMinimum:\n80 words\n\nMaximum:\n160 words\n\n---\n\n# TONE RULES\n\nThe email must feel:\n\n* Intelligent\n* Commercially aware\n* Efficient\n* Precise\n* Calm\n* Confident\n\nNOT:\n\n* Pushy\n* Desperate\n* Overfriendly\n* Robotic\n\n---\n\n# CTA RULES\n\nCTA must be short and frictionless.\n\nGOOD EXAMPLES:\n\n* \"هل يناسبكم اجتماع قصير هذا الأسبوع؟\"\n* \"Would a 15-minute call next week make sense?\"\n* \"يمكنني مشاركة تصور عملي سريع يناسب نشاطكم.\"\n\nBAD EXAMPLES:\n\n* Long sales paragraphs\n* Aggressive closing\n* Multiple CTAs\n\n---\n\n# OUTPUT FORMAT\n\nReturn ONLY:\n\n1. Subject Line\n2. Email Body\n\nNo explanations.\nNo markdown.\nNo notes.\nNo placeholders except provided variables.\n\n============================================================\n\n# USER PROMPT TEMPLATE (AR)\n\nاسم الشركة:\n{{company_name}}\n\nمجال الشركة:\n{{industry}}\n\nلغة الرسالة:\n{{language}}\n\nاكتب رسالة بريد إلكتروني مخصصة وفق جميع قواعد الـ System Prompt.\n\n============================================================\n\n# USER PROMPT TEMPLATE (EN)\n\nCompany Name:\n{{company_name}}\n\nIndustry:\n{{industry}}\n\nOutput Language:\n{{language}}\n\nWrite a personalized cold email following all System Prompt rules.\n\n============================================================\n\n# EXAMPLE INPUT\n\nCompany Name:\nNova Logistics\n\nIndustry:\nLogistics\n\nOutput Language:\nArabic\n\n============================================================\n\n# EXAMPLE OUTPUT\n\nالعنوان:\nتقليل التأخير التشغيلي في قطاع الخدمات اللوجستية باستخدام الأتمتة الذكية\n\nالنص:\nشركات الخدمات اللوجستية تواجه عادة ضغطاً متزايداً في متابعة الشحنات والتواصل مع العملاء وإدارة العمليات اليومية بشكل متزامن.\n\nيمكن لأنظمة الأتمتة المدعومة بالذكاء الاصطناعي تقليل الوقت الضائع في تحديثات الشحنات، وأتمتة الإشعارات، وتحسين متابعة الطلبات بشكل لحظي، مما ينعكس مباشرة على سرعة التنفيذ وتقليل العبء التشغيلي.\n\nفي بعض الحالات، ساعدت هذه الحلول على تقليل وقت المعالجة اليومية بشكل ملحوظ ورفع كفاءة فرق العمليات دون زيادة الموارد البشرية.\n\nهل يناسبكم اجتماع قصير هذا الأسبوع لاستعراض أفكار عملية مناسبة لطبيعة عملياتكم؟\n"
+            },
+            {
+              "content": "=\n# USER PROMPT (PRODUCTION VERSION)\n\n## Arabic Version\n\nاسم الشركة:{{ $json['company name'] }}\n\n\nمجال الشركة:{{ $json.industry }}\n\n\nلغة الرسالة:\n{{ $json['AI PITCH'] }}\n\n\n\n\nالمطلوب:\n\nاكتب رسالة بريد إلكتروني مبيعات B2B مخصصة بالكامل لهذه الشركة.\n\nالتزم حرفياً بجميع قواعد الـ System Prompt.\n\nالشروط الإضافية:\n\n* اجعل الرسالة تبدو مكتوبة يدوياً.\n* اربط الاقتراحات مباشرة بطبيعة المجال.\n* ركز على التأثير التشغيلي والمالي.\n* تجنب أي أسلوب تسويقي مبالغ فيه.\n* لا تستخدم مقدمات تقليدية.\n* لا تستخدم Emojis.\n* لا تستخدم نقاط كثيرة داخل الرسالة.\n* اجعل CTA قصيراً جداً.\n* اجعل الرسالة احترافية ومختصرة.\n\nتنسيق الإخراج المطلوب:\n\nالعنوان:\n[Subject Line]\n\nالنص:\n[Email Body]\n\n==================================================\n\n## English Version\n\nCompany Name:{{ $json['company name'] }}\n\n\nIndustry:{{ $json.industry }}\n\n\n\nTask:\n\nWrite a highly personalized B2B cold email for this company.\n\nStrictly follow all System Prompt rules.\n\nAdditional Requirements:\n\n* Make the email sound human-written.\n* Tie all suggestions directly to the industry.\n* Focus on operational and financial impact.\n* Avoid exaggerated marketing language.\n* Do not use generic openings.\n* Do not use emojis.\n* Avoid excessive bullet points.\n* Keep the CTA very short.\n* Keep the email concise and professional.\n\nRequired Output Format:\n\nSubject:\n[Subject Line]\n\nBody:\n[Email Body]\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "5182c2ef-a87f-4703-9d04-7724ef80b8f7",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Heq1Ly69Dbet25oD",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74",
+          "mode": "list",
+          "cachedResultName": "AI Leads Training",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f5f17328-3170-4b12-8c87-da6d86a7a500",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hNFN5KtBscQeyUD7",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74",
+          "mode": "list",
+          "cachedResultName": "AI Leads Training",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "AI PITCH": "={{ $json.output[0].content[0].text }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "company name",
+              "displayName": "company name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI PITCH",
+              "displayName": "AI PITCH",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        0
+      ],
+      "id": "3cdc58be-ad79-48b7-926b-61d6a1ff219f",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hNFN5KtBscQeyUD7",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74",
+          "mode": "list",
+          "cachedResultName": "AI Leads Training",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I9KkACYIAx8e_EOHbp9JZD2D_mEvV_0_sZXrfrkyU74/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "17a7c7bf-a7df-4adc-a48b-252967a651ea",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "pTYZRYrjtR8d9Slk",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ilyassemejjati203@gmail.com",
+        "subject": "=رسالة مبيعات مقترحة لشركة: ",
+        "emailType": "text",
+        "message": "={{ $json['AI PITCH'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        0
+      ],
+      "id": "cc808e77-89e9-44e8-91d7-6272f5361c52",
+      "name": "Send a message",
+      "webhookId": "82b8a9de-ce32-43f9-adcf-4422c22668d2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ge5KjslUAaysQIpm",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f974dbd5-7254-4710-8c57-32e29fdc1a50",
+              "leftValue": "={{ $json['company name'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "126aea15-644e-48d3-bdd8-decedc6599db",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "90445942-31e3-4470-8a8a-f4067fd4252e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "867407d865feda376bbf8f0dfa82d6f4a564777f2e24f5d626e56cd73d6a760a"
+  },
+  "id": "02IqAOhQD9Q1XmGm",
+  "tags": []
+}
