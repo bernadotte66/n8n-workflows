@@ -39,6 +39,24 @@ AI-powered Telegram bot that handles natural language queries and automates resp
 
 ---
 
+### 4. WhatsApp Commerce Bot
+**Full e-commerce bot via WhatsApp Business API**
+
+A complete state-machine-driven WhatsApp bot for local stores and home-based businesses. Handles the full order flow end-to-end — from product browsing to invoice generation and order confirmation.
+
+- **Use case:** Local stores and home businesses automating orders via WhatsApp
+- **Stack:** n8n · WhatsApp Business API · Meta Cloud API
+- **Features:**
+  - Interactive product menu with categories
+  - Automatic cart management
+  - Invoice calculation (subtotal + delivery + tax)
+  - Customer data collection (name + address)
+  - Order confirmation with order number
+  - Session management across conversations
+- **Result:** Fully automated order flow — zero manual handling from browse to confirm
+
+---
+
 ## Tech Stack
 
 | Tool | Purpose |
@@ -47,10 +65,11 @@ AI-powered Telegram bot that handles natural language queries and automates resp
 | OpenAI / Groq | LLM processing |
 | Telegram API | Bot interface |
 | OCR.Space | Image text extraction |
+| WhatsApp Business API | Commerce automation |
 
 ---
 
 ## About
 
 Built by a freelance automation specialist focused on practical, scalable n8n workflows.
-Available for custom automation projects — [connect on LinkedIn] https://www.linkedin.com/in/ilyasse-m/
+Available for custom automation projects — [connect on LinkedIn](https://www.linkedin.com/in/ilyasse-m/)
