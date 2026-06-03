@@ -1,0 +1,308 @@
+{
+  "name": "WhatsApp Commerce Bot",
+  "nodes": [
+    {
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        260,
+        -200
+      ],
+      "parameters": {
+        "content": "## ⚙️ WhatsApp Commerce Bot — Setup Guide\n\n### 1. Environment Variables (Settings → Environment Variables)\n| Variable | Description | Example |\n|---|---|---|\n| `WHATSAPP_PHONE_NUMBER_ID` | From Meta Developer Console | `123456789` |\n| `WHATSAPP_VERIFY_TOKEN` | Custom token you choose | `myverifytoken123` |\n| `STORE_NAME` | Your store name | `LocalMart` |\n| `DELIVERY_FEE` | Flat delivery fee | `2.00` |\n| `TAX_RATE` | Tax rate as decimal | `0.08` |\n\n### 2. Credentials (Settings → Credentials → New)\n- **Type:** HTTP Header Auth\n- **Name:** `WhatsApp API Token`\n- **Header Name:** `Authorization`\n- **Header Value:** `Bearer YOUR_PERMANENT_ACCESS_TOKEN`\n\n### 3. Meta Developer Console\n- Webhook URL: `https://YOUR_N8N_URL/webhook/whatsapp-bot`\n- Verify URL: `https://YOUR_N8N_URL/webhook/whatsapp-verify`\n- Verify Token: same as `WHATSAPP_VERIFY_TOKEN`\n- Subscribe to: **messages**\n\n### 4. Customize Products\nEdit the `PRODUCTS` object in the *Process Message* node.\n\n### Flow\n`Webhook → Parse → State Machine → Send API → Respond 200`",
+        "height": 440,
+        "width": 640,
+        "color": 4
+      }
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        460
+      ],
+      "webhookId": "whatsapp-bot-messages",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-bot",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "name": "Webhook Verify",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        240
+      ],
+      "webhookId": "whatsapp-bot-verify",
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "whatsapp-verify",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "name": "Handle Verification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        240
+      ],
+      "parameters": {
+        "jsCode": "const query = $input.first().json.query || {};\nconst VERIFY_TOKEN = 'myverifytoken123';\n\nconst mode = query['hub.mode'];\nconst token = query['hub.verify_token'];\nconst challenge = query['hub.challenge'];\n\nif (mode === 'subscribe' && token === VERIFY_TOKEN) {\n  return [{ json: { challenge: challenge, statusCode: 200 } }];\n}\n\nreturn [{ json: { error: 'Verification failed', statusCode: 403, challenge: '' } }];"
+      }
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "name": "Respond Verify",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        240
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.challenge }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode }}"
+        }
+      }
+    },
+    {
+      "id": "55555555-5555-5555-5555-555555555555",
+      "name": "Process Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// =================================================================\n// WhatsApp Commerce Bot — State Machine\n// =================================================================\n\n// --- Configuration ---\nconst PHONE_NUMBER_ID = '1099754263228951';\nconst STORE_NAME      = 'LocalMart';\nconst DELIVERY_FEE    = 2.00;\nconst TAX_RATE        = 0.08;\n\n// --- Product Catalog ---\nconst PRODUCTS = {\n  'prod_1': { name: '🍞 Bread',        price: 2.50, unit: 'loaf'        },\n  'prod_2': { name: '🥛 Milk',         price: 1.80, unit: '1L bottle'   },\n  'prod_3': { name: '🥚 Eggs',         price: 3.50, unit: 'dozen'       },\n  'prod_4': { name: '🍚 Rice',         price: 2.00, unit: '1kg bag'     },\n  'prod_5': { name: '🧂 Sugar',        price: 1.50, unit: '1kg bag'     },\n  'prod_6': { name: '🫙 Cooking Oil',  price: 3.00, unit: '1L bottle'   },\n  'prod_7': { name: '💧 Bottled Water',price: 1.00, unit: '500ml bottle'},\n  'prod_8': { name: '🧼 Soap',         price: 2.00, unit: 'bar'         }\n};\n\n// --- Parse incoming WhatsApp webhook ---\nconst body     = $input.first().json.body;\nconst messages = body?.entry?.[0]?.changes?.[0]?.value?.messages;\nconst contacts = body?.entry?.[0]?.changes?.[0]?.value?.contacts;\n\nif (!messages || messages.length === 0) {\n  return [{ json: { skip: true, reason: 'No messages (status update or other event)' } }];\n}\n\nconst message     = messages[0];\nconst contact     = contacts?.[0];\nconst from        = message.from;\nconst messageType = message.type;\nconst contactName = contact?.profile?.name || 'Customer';\n\nlet messageText = '';\nif (messageType === 'text') {\n  messageText = message.text?.body?.trim() || '';\n} else if (messageType === 'interactive') {\n  const iType = message.interactive?.type;\n  if (iType === 'button_reply') {\n    messageText = message.interactive.button_reply?.id || '';\n  } else if (iType === 'list_reply') {\n    messageText = message.interactive.list_reply?.id || '';\n  }\n} else {\n  messageText = '__unsupported__';\n}\n\n// --- Session management ---\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.sessions)        staticData.sessions = {};\nif (!staticData.completedOrders) staticData.completedOrders = [];\n\nconst now = Date.now();\nfor (const phone of Object.keys(staticData.sessions)) {\n  const s = staticData.sessions[phone];\n  if (s.lastActivity && (now - new Date(s.lastActivity).getTime()) > 86_400_000) {\n    delete staticData.sessions[phone];\n  }\n}\n\nlet session = staticData.sessions[from] || {\n  state: 'initial',\n  cart: [],\n  name: '',\n  location: '',\n  selectedProduct: null,\n  invoice: null,\n  createdAt: new Date().toISOString()\n};\nsession.lastActivity = new Date().toISOString();\n\n// --- Global commands ---\nconst textLower = messageText.toLowerCase().trim();\nconst RESET_CMDS = ['menu', 'restart', 'start', 'hi', 'hello', 'hola', '/start', '0'];\nconst HELP_CMDS  = ['help', 'ayuda', '?'];\n\nlet payload = null;\n\nif (messageText === '__unsupported__') {\n  payload = mkText(from, 'I can only read text messages and menu taps.\\n\\nType *MENU* to browse products or *HELP* for assistance.');\n\n} else if (HELP_CMDS.includes(textLower)) {\n  payload = mkText(from,\n    '*Help & Support*\\n\\n' +\n    '*How to order:*\\n' +\n    '1. Type MENU or say hello\\n' +\n    '2. Pick a product from the list\\n' +\n    '3. Enter the quantity you want\\n' +\n    '4. Add more items or proceed to checkout\\n' +\n    '5. Enter your name and delivery address\\n' +\n    '6. Review your invoice and confirm\\n\\n' +\n    '*Commands:*\\n' +\n    '- *MENU* - Browse products / restart\\n' +\n    '- *HELP* - Show this message\\n\\n' +\n    'Type *MENU* to start shopping!'\n  );\n\n} else if (RESET_CMDS.includes(textLower) || session.state === 'initial') {\n  session.state           = 'awaiting_menu';\n  session.cart            = [];\n  session.selectedProduct = null;\n  session.name            = '';\n  session.location        = '';\n  session.invoice         = null;\n  payload = mkWelcome(from, contactName);\n\n} else {\n  switch (session.state) {\n\n    case 'awaiting_menu': {\n      if (PRODUCTS[messageText]) {\n        const prod = PRODUCTS[messageText];\n        session.selectedProduct = messageText;\n        session.state = 'awaiting_quantity';\n        payload = mkText(from,\n          `*${prod.name}* selected!\\n\\n` +\n          `Price: *$${prod.price.toFixed(2)}* per ${prod.unit}\\n\\n` +\n          `How many ${prod.unit}s would you like?\\n` +\n          `(Enter a whole number between 1 and 99)`\n        );\n      } else {\n        payload = mkMenu(from, 'Please choose a product from the list:');\n      }\n      break;\n    }\n\n    case 'awaiting_quantity': {\n      const qty = parseInt(messageText, 10);\n      if (!isNaN(qty) && qty >= 1 && qty <= 99) {\n        const prodId = session.selectedProduct;\n        const prod   = PRODUCTS[prodId];\n        if (!prod) {\n          session.state = 'awaiting_menu';\n          payload = mkWelcome(from, contactName);\n          break;\n        }\n        const existIdx = session.cart.findIndex(i => i.id === prodId);\n        if (existIdx >= 0) {\n          session.cart[existIdx].quantity += qty;\n          session.cart[existIdx].subtotal  = session.cart[existIdx].quantity * session.cart[existIdx].price;\n        } else {\n          session.cart.push({ id: prodId, name: prod.name, price: prod.price, unit: prod.unit, quantity: qty, subtotal: prod.price * qty });\n        }\n        session.selectedProduct = null;\n        session.state = 'awaiting_cart_action';\n        payload = mkCart(from, session.cart);\n      } else {\n        payload = mkText(from, 'Invalid quantity. Please enter a number between *1* and *99*:');\n      }\n      break;\n    }\n\n    case 'awaiting_cart_action': {\n      if (messageText === 'action_add_more') {\n        session.state = 'awaiting_menu';\n        payload = mkMenu(from, 'Select another product to add to your cart:');\n      } else if (messageText === 'action_checkout') {\n        if (session.cart.length === 0) {\n          session.state = 'awaiting_menu';\n          payload = mkWelcome(from, contactName);\n        } else {\n          session.state = 'awaiting_name';\n          payload = mkText(from, '*Delivery Details*\\n\\nPlease enter your *full name*:');\n        }\n      } else if (messageText === 'action_clear') {\n        session.cart  = [];\n        session.state = 'awaiting_menu';\n        payload = mkText(from, 'Cart cleared!\\n\\nType *MENU* to start a new order.');\n      } else {\n        payload = mkCart(from, session.cart);\n      }\n      break;\n    }\n\n    case 'awaiting_name': {\n      const safeName = messageText.replace(/[<>\"]/g, '');\n      if (safeName.length >= 2 && safeName.length <= 100 && !safeName.startsWith('action_') && !safeName.startsWith('prod_') && !safeName.startsWith('confirm_')) {\n        session.name  = safeName;\n        session.state = 'awaiting_location';\n        payload = mkText(from,\n          `Thank you, *${safeName}*!\\n\\n` +\n          `Please enter your *delivery address*:\\n` +\n          `(Street name, area, or any landmarks)`\n        );\n      } else {\n        payload = mkText(from, 'Please enter a valid name (2-100 characters):');\n      }\n      break;\n    }\n\n    case 'awaiting_location': {\n      const safeAddr = messageText.replace(/[<>\"]/g, '');\n      if (safeAddr.length >= 5 && safeAddr.length <= 500 && !safeAddr.startsWith('action_') && !safeAddr.startsWith('prod_') && !safeAddr.startsWith('confirm_')) {\n        session.location = safeAddr;\n\n        const subtotal = session.cart.reduce((s, i) => s + i.subtotal, 0);\n        const tax      = subtotal * TAX_RATE;\n        const total    = subtotal + DELIVERY_FEE + tax;\n\n        session.invoice = {\n          orderNumber: `ORD-${Date.now()}-${Math.floor(Math.random() * 9000) + 1000}`,\n          subtotal:    subtotal.toFixed(2),\n          deliveryFee: DELIVERY_FEE.toFixed(2),\n          taxRate:     (TAX_RATE * 100).toFixed(0),\n          tax:         tax.toFixed(2),\n          total:       total.toFixed(2),\n          createdAt:   new Date().toISOString()\n        };\n\n        session.state = 'awaiting_confirmation';\n        payload = mkInvoice(from, session);\n      } else {\n        payload = mkText(from, 'Please enter a valid delivery address (at least 5 characters):');\n      }\n      break;\n    }\n\n    case 'awaiting_confirmation': {\n      if (messageText === 'confirm_yes') {\n        const orderNum = session.invoice.orderNumber;\n        staticData.completedOrders.push({\n          orderNumber: orderNum,\n          from,\n          name:        session.name,\n          location:    session.location,\n          cart:        JSON.parse(JSON.stringify(session.cart)),\n          invoice:     JSON.parse(JSON.stringify(session.invoice)),\n          completedAt: new Date().toISOString()\n        });\n        if (staticData.completedOrders.length > 500) {\n          staticData.completedOrders = staticData.completedOrders.slice(-500);\n        }\n        session.state           = 'initial';\n        session.cart            = [];\n        session.name            = '';\n        session.location        = '';\n        session.invoice         = null;\n        session.selectedProduct = null;\n        payload = mkConfirmed(from, orderNum);\n\n      } else if (messageText === 'confirm_no') {\n        session.state           = 'initial';\n        session.cart            = [];\n        session.name            = '';\n        session.location        = '';\n        session.invoice         = null;\n        session.selectedProduct = null;\n        payload = mkText(from,\n          '*Order Cancelled*\\n\\n' +\n          'No charges were made.\\n\\n' +\n          'Type *MENU* to start a new order anytime!'\n        );\n      } else {\n        payload = mkInvoice(from, session);\n      }\n      break;\n    }\n\n    default: {\n      session.state = 'initial';\n      session.cart  = [];\n      payload = mkWelcome(from, contactName);\n    }\n  }\n}\n\nstaticData.sessions[from] = session;\n\n// =================================================================\n// MESSAGE BUILDER HELPERS\n// =================================================================\n\nfunction mkWelcome(to, name) {\n  return {\n    messaging_product: 'whatsapp',\n    recipient_type: 'individual',\n    to,\n    type: 'interactive',\n    interactive: {\n      type: 'list',\n      header: { type: 'text', text: `Welcome to ${STORE_NAME}!` },\n      body: {\n        text:\n          `Hello *${name}*!\\n\\n` +\n          `Welcome to *${STORE_NAME}* - your neighborhood store.\\n\\n` +\n          `We deliver fresh groceries and household items right to your door!\\n\\n` +\n          `Browse our products below to get started:`\n      },\n      footer: { text: 'Type HELP for assistance | MENU to restart' },\n      action: {\n        button: 'Browse Products',\n        sections: [\n          {\n            title: 'Food & Beverages',\n            rows: [\n              { id: 'prod_1', title: 'Bread',  description: 'Fresh baked loaf - $2.50' },\n              { id: 'prod_2', title: 'Milk',   description: 'Whole milk, 1L - $1.80' },\n              { id: 'prod_3', title: 'Eggs',   description: 'Farm fresh, dozen - $3.50' },\n              { id: 'prod_4', title: 'Rice',   description: 'Premium quality, 1kg - $2.00' },\n              { id: 'prod_5', title: 'Sugar',  description: 'White refined, 1kg - $1.50' }\n            ]\n          },\n          {\n            title: 'Household Items',\n            rows: [\n              { id: 'prod_6', title: 'Cooking Oil',   description: 'Vegetable oil, 1L - $3.00' },\n              { id: 'prod_7', title: 'Bottled Water', description: 'Purified, 500ml - $1.00' },\n              { id: 'prod_8', title: 'Soap',          description: 'Antibacterial bar - $2.00' }\n            ]\n          }\n        ]\n      }\n    }\n  };\n}\n\nfunction mkMenu(to, headerText) {\n  return {\n    messaging_product: 'whatsapp',\n    recipient_type: 'individual',\n    to,\n    type: 'interactive',\n    interactive: {\n      type: 'list',\n      header: { type: 'text', text: headerText || 'Product Menu' },\n      body: { text: 'Select a product to add to your cart:' },\n      footer: { text: 'Type MENU to clear cart and start over' },\n      action: {\n        button: 'Choose Product',\n        sections: [\n          {\n            title: 'Food & Beverages',\n            rows: [\n              { id: 'prod_1', title: 'Bread',  description: 'Fresh baked loaf - $2.50' },\n              { id: 'prod_2', title: 'Milk',   description: 'Whole milk, 1L - $1.80' },\n              { id: 'prod_3', title: 'Eggs',   description: 'Farm fresh, dozen - $3.50' },\n              { id: 'prod_4', title: 'Rice',   description: 'Premium quality, 1kg - $2.00' },\n              { id: 'prod_5', title: 'Sugar',  description: 'White refined, 1kg - $1.50' }\n            ]\n          },\n          {\n            title: 'Household Items',\n            rows: [\n              { id: 'prod_6', title: 'Cooking Oil',   description: 'Vegetable oil, 1L - $3.00' },\n              { id: 'prod_7', title: 'Bottled Water', description: 'Purified, 500ml - $1.00' },\n              { id: 'prod_8', title: 'Soap',          description: 'Antibacterial bar - $2.00' }\n            ]\n          }\n        ]\n      }\n    }\n  };\n}\n\nfunction mkCart(to, cart) {\n  let lines = '*Your Shopping Cart:*\\n\\n';\n  cart.forEach((item, i) => {\n    lines += `${i + 1}. ${item.name}\\n`;\n    lines += `   ${item.quantity} x $${item.price.toFixed(2)} = *$${item.subtotal.toFixed(2)}*\\n\\n`;\n  });\n  const subtotal = cart.reduce((s, i) => s + i.subtotal, 0);\n  lines += `---\\n`;\n  lines += `*Subtotal: $${subtotal.toFixed(2)}*\\n`;\n  lines += `(Delivery & tax added at checkout)\\n\\n`;\n  lines += `What would you like to do?`;\n  return {\n    messaging_product: 'whatsapp',\n    recipient_type: 'individual',\n    to,\n    type: 'interactive',\n    interactive: {\n      type: 'button',\n      body: { text: lines },\n      action: {\n        buttons: [\n          { type: 'reply', reply: { id: 'action_add_more', title: 'Add More'    } },\n          { type: 'reply', reply: { id: 'action_checkout', title: 'Checkout'    } },\n          { type: 'reply', reply: { id: 'action_clear',    title: 'Clear Cart'  } }\n        ]\n      }\n    }\n  };\n}\n\nfunction mkInvoice(to, session) {\n  const { cart, invoice, name, location } = session;\n  let txt = `*ORDER INVOICE*\\n\\n`;\n  txt += `Order: *${invoice.orderNumber}*\\n`;\n  txt += `Name: *${name}*\\n`;\n  txt += `Deliver to: *${location}*\\n\\n`;\n  txt += `*Items Ordered:*\\n`;\n  cart.forEach(item => {\n    txt += `- ${item.name} x${item.quantity}\\n`;\n    txt += `  $${item.price.toFixed(2)} x ${item.quantity} = *$${item.subtotal.toFixed(2)}*\\n`;\n  });\n  txt += `\\n---\\n`;\n  txt += `Subtotal:    $${invoice.subtotal}\\n`;\n  txt += `Delivery:    $${invoice.deliveryFee}\\n`;\n  txt += `Tax (${invoice.taxRate}%):  $${invoice.tax}\\n`;\n  txt += `---\\n`;\n  txt += `*TOTAL: $${invoice.total}*\\n\\n`;\n  txt += `Est. delivery: *2-4 hours*\\n`;\n  txt += `Payment: *Cash on delivery*\\n\\n`;\n  txt += `Please review and confirm your order:`;\n  return {\n    messaging_product: 'whatsapp',\n    recipient_type: 'individual',\n    to,\n    type: 'interactive',\n    interactive: {\n      type: 'button',\n      header: { type: 'text', text: 'Your Invoice' },\n      body:   { text: txt },\n      footer: { text: 'Free cancellation before dispatch' },\n      action: {\n        buttons: [\n          { type: 'reply', reply: { id: 'confirm_yes', title: 'Confirm Order' } },\n          { type: 'reply', reply: { id: 'confirm_no',  title: 'Cancel Order'  } }\n        ]\n      }\n    }\n  };\n}\n\nfunction mkConfirmed(to, orderNumber) {\n  return {\n    messaging_product: 'whatsapp',\n    recipient_type: 'individual',\n    to,\n    type: 'text',\n    text: {\n      body:\n        `*Order Confirmed!*\\n\\n` +\n        `Thank you for shopping at *${STORE_NAME}*!\\n\\n` +\n        `Order #: *${orderNumber}*\\n` +\n        `Estimated delivery: *2-4 hours*\\n` +\n        `Payment: *Cash on delivery*\\n\\n` +\n        `Our delivery team will call you shortly.\\n\\n` +\n        `Need help? Type *HELP*\\n` +\n        `New order? Type *MENU*\\n\\n` +\n        `Thank you! We appreciate your business.`\n    }\n  };\n}\n\nfunction mkText(to, bodyText) {\n  return {\n    messaging_product: 'whatsapp',\n    recipient_type: 'individual',\n    to,\n    type: 'text',\n    text: { body: bodyText }\n  };\n}\n\nreturn [{\n  json: {\n    skip:            false,\n    from,\n    phoneNumberId:   PHONE_NUMBER_ID,\n    whatsappPayload: payload,\n    sessionState:    session.state,\n    cartCount:       session.cart.length\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "66666666-6666-6666-6666-666666666666",
+      "name": "Has Response?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        820,
+        460
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "77777777-7777-7777-7777-777777777777",
+      "name": "Send WhatsApp API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        360
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $json.phoneNumberId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.whatsappPayload) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "whatsapp-api-token",
+          "name": "WhatsApp API Token"
+        }
+      }
+    },
+    {
+      "id": "88888888-8888-8888-8888-888888888888",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1380,
+        360
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\" }",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "99999999-9999-9999-9999-999999999999",
+      "name": "Respond Skip",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        580
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"event acknowledged\" }",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Verify": {
+      "main": [
+        [
+          {
+            "node": "Handle Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Verification": {
+      "main": [
+        [
+          {
+            "node": "Respond Verify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "Process Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Message": {
+      "main": [
+        [
+          {
+            "node": "Has Response?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Response?": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp API": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "1.0.0",
+  "id": "whatsapp-commerce-bot",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "local"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "id": "tag-whatsapp",
+      "name": "WhatsApp"
+    },
+    {
+      "id": "tag-ecommerce",
+      "name": "E-Commerce"
+    },
+    {
+      "id": "tag-bot",
+      "name": "Bot"
+    }
+  ]
+}
